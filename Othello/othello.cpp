@@ -6,27 +6,30 @@
 //  Copyright (c) 2013 Landon Epps. All rights reserved.
 //
 
-#include <iostream>
-#include <vector>
 #include "othello.h"
 
 const pair<int, int> adjacentMoves[8] = {make_pair(-1, 0), make_pair(-1, 1),
 make_pair(0 , 1), make_pair(1 , 1), make_pair(1 , 0), make_pair(1 , -1),
 make_pair(0, -1), make_pair(-1, -1)};
 
-/*
+        
 struct moveNode {
-    moveNode *parent;
+    int color;
+    // moveNode *parent;
     vector<moveNode> children;
-    int score;
-    bool max;
+    // int score;
+    Board board;
+    vector<pair<int, int> > whiteMoves;
+    vector<pair<int, int> > blackMoves;
     pair<int, int> move;
-    moveNode(int s, int m){
+    /*
+    moveNode(){
         score = s;
-        max = m;
     }
+    */
 };
-*/
+
+/*
 struct moveInfo {
     int score;
     pair<int, int> move;
@@ -35,10 +38,11 @@ struct moveInfo {
         move = m;
     }
 };
+*/
 
-vector<moveInfo> findMoves(int color, vector<pair<int, int> > &blackPieces, vector<pair<int, int> > &whitePieces, Board b) {
+set<Move> findMoves(int color, vector<pair<int, int> > &blackPieces, vector<pair<int, int> > &whitePieces, Board b) {
     vector<pair<int, int> > *opponentsPieces;
-    vector<moveInfo> moves;
+    set<Move> moves;
     int opponent;
     if (color == WHITE) {
         opponent = BLACK;
@@ -60,10 +64,12 @@ vector<moveInfo> findMoves(int color, vector<pair<int, int> > &blackPieces, vect
                 b[move.first][move.second] == OPEN) {
                 // keep track of score
                 int score = 0;
+                Board newBoard = b;
                 // for all directions
                 for (int k = 0; k < 8; k++) {
                     // keep track of score for each direction
                     int tempScore = 0;
+                    Board tempBoard = newBoard;
                     pair<int, int> nextDirection = make_pair(move.first + adjacentMoves[k].first,
                                                              move.second + adjacentMoves[k].second);
                     
@@ -71,6 +77,7 @@ vector<moveInfo> findMoves(int color, vector<pair<int, int> > &blackPieces, vect
                            nextDirection.second >= 0 && nextDirection.second < b.getCol() &&
                            b[nextDirection.first][nextDirection.second] == opponent) {
                         tempScore++;
+                        tempBoard[nextDirection.first][nextDirection.second] = color;
                         nextDirection = make_pair(nextDirection.first + adjacentMoves[k].first,
                                                   nextDirection.second + adjacentMoves[k].second);
                     }
@@ -78,30 +85,37 @@ vector<moveInfo> findMoves(int color, vector<pair<int, int> > &blackPieces, vect
                         nextDirection.second >= 0 && nextDirection.second < b.getCol() &&
                         b[nextDirection.first][nextDirection.second] == color) {
                         score += tempScore;
+                        newBoard = tempBoard;
                     }
                 }
                 if (score > 0) {
-                    moves.push_back(moveInfo(score, move));
+                    Move tempMove(move, score, newBoard);
+                    moves.insert(tempMove);
+                    //moves.insert(Move(move, score, b));
                 }
             }
         }
     }
     return moves;
 }
+
 /*
-pair<int, int> generateTree(moveNode *root, vector<int, int> moves) {
-
-    return make_pair(int(), int());
-}
-
-pair<int, int> TeamNULLPlayer::move(Board b){
-    pair<int,int> nextMove;
+void TeamNULLPlayer::move(Board b, pair<int,int> &move) {
     vector<int, int> moves;
     moveNode* root;
-
-    return nextMove;
+    
 }
 */
+
+void printBoard(Board b) {
+    for (int i = 0; i < b.getRow(); i++) {
+        for (int j = 0; j < b.getCol(); j++) {
+            cout << b[i][j] << ' ';
+        }
+        cout << endl;
+    }
+}
+
 int main(int argc, const char * argv[])
 {
     Board board;
@@ -116,24 +130,22 @@ int main(int argc, const char * argv[])
     whitePieces.push_back(make_pair(2, 2));
     whitePieces.push_back(make_pair(3, 3));
 
+    board[0][0] = WHITE;
+    board[1][1] = WHITE;
+    board[2][2] = WHITE;
+    board[3][3] = WHITE;
+    board[1][0] = BLACK;
+    board[1][2] = BLACK;
+    board[2][3] = BLACK;
+    board[3][2] = BLACK;
 
-    /*
-     grid[0][0] = WHITE;
-     grid[1][1] = WHITE;
-     grid[2][2] = WHITE;
-     grid[3][3] = WHITE;
-     grid[1][0] = BLACK;
-     grid[1][2] = BLACK;
-     grid[2][3] = BLACK;
-     grid[3][2] = BLACK;
-     */
-
-    vector<moveInfo> theMoves;
+    set<Move> theMoves;
     theMoves = findMoves(1, blackPieces, whitePieces, board);
 
-    for (int i = 0; i < theMoves.size(); i++) {
-        cout << "Move #" << i + 1 << ": (" << theMoves[i].move.first << ", " << theMoves[i].move.second << ")" << endl;
-        cout << "Score: " << theMoves[i].score << endl;
+    for (set<Move>::iterator itr = theMoves.begin(); itr != theMoves.end(); itr++) {
+        cout << "Move: (" << itr->move.first << ", " << itr->move.second << ")" << endl;
+        cout << "Score: " << itr->score << endl;
     }
+
     return 0;
 }

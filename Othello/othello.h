@@ -10,6 +10,9 @@
 #define Othello_othello_h
 
 #include <utility>
+#include <iostream>
+#include <vector>
+#include <set>
 
 using namespace std;
 
@@ -36,9 +39,11 @@ public:
     int getRow() {
         return row;
     }
+    
     int getCol() {
         return col;
     }
+    
     Board(int r = 8, int c = 8) {
         row = r;
         col = c;
@@ -49,25 +54,57 @@ public:
                 grid[i][j] = OPEN;
             }
         }
-        grid[0][0] = WHITE;
-        grid[1][1] = WHITE;
-        grid[2][2] = WHITE;
-        grid[3][3] = WHITE;
-        grid[1][0] = BLACK;
-        grid[1][2] = BLACK;
-        grid[2][3] = BLACK;
-        grid[3][2] = BLACK;
-
-        
     }
+    
     ~Board() {
         for (int i = 0; i < row; i++) {
-            //delete [] grid[i];
+            delete [] grid[i];
         }
-        //delete [] grid;
+        delete [] grid;
     }
+    
+    Board operator=(Board &other) {
+        row = other.row;
+        col = other.col;
+        grid = new int*[row];
+        for (int i = 0; i < row; i++) {
+            grid[i] = new int[col];
+            for (int j = 0; j < col; j++) {
+                grid[i][j] = other.grid[i][j];
+            }
+        }
+        return *this;
+    }
+
+    Board(Board &b) {
+        row = b.row;
+        col = b.col;
+        grid = new int*[row];
+        for (int i = 0; i < row; i++) {
+            grid[i] = new int[col];
+            for (int j = 0; j < col; j++) {
+                grid[i][j] = b.grid[i][j];
+            }
+        }
+    }
+
     int* operator[](int n) {
         return grid[n];
+    }
+};
+
+class Move {
+public:
+    pair<int, int> move;
+    int score;
+    Board board;
+    bool operator<(const Move &other) const {
+        return (this->move.first < other.move.first);
+    }
+    Move(pair<int, int> m, int s, Board &b) {
+        move = m;
+        score = s;
+        board = b;
     }
 };
 
@@ -76,19 +113,17 @@ private:
     int color;
     
 public:
-    Player(int c = BLACK);
+    Player(int c = BLACK) { color = c; }
     virtual ~Player();
-    int getColor();
-    void setColor(int c);
+    int getColor() { return color; }
+    void setColor(int c) { color = c; }
     virtual void move(Board, pair<int,int>&);
 };
 
 class TeamNULLPlayer: public Player
 {
-private:
-
 public:
-    pair<int,int> move(Board b);
+        void move(Board, pair<int,int>&);
 };
 
 #endif
