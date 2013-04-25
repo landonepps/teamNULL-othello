@@ -39,11 +39,11 @@ public:
     int getRow() {
         return row;
     }
-    
+
     int getCol() {
         return col;
     }
-    
+
     Board(int r = 8, int c = 8) {
         row = r;
         col = c;
@@ -55,15 +55,15 @@ public:
             }
         }
     }
-    
+
     ~Board() {
         for (int i = 0; i < row; i++) {
             delete [] grid[i];
         }
         delete [] grid;
     }
-    
-    Board operator=(Board &other) {
+
+    Board operator=(Board const &other) {
         row = other.row;
         col = other.col;
         grid = new int*[row];
@@ -76,7 +76,7 @@ public:
         return *this;
     }
 
-    Board(Board &b) {
+    Board(Board const &b) {
         row = b.row;
         col = b.col;
         grid = new int*[row];
@@ -93,18 +93,41 @@ public:
     }
 };
 
+struct moveNode {
+    int color;
+    // moveNode *parent;
+    vector<moveNode> children;
+    // int score;
+    Board board;
+    vector<pair<int, int> > pieces;
+    vector<pair<int, int> > opponentsPieces;
+    pair<int, int> move;
+    /*
+     moveNode(){
+     score = s;
+     }
+     */
+};
+
 class Move {
 public:
-    pair<int, int> move;
+    pair<int, int> position;
     int score;
     Board board;
     bool operator<(const Move &other) const {
-        return (this->move.first < other.move.first);
+        return (this->position.first < other.position.first);
     }
-    Move(pair<int, int> m, int s, Board &b) {
-        move = m;
+
+    Move(pair<int, int> p, int s, Board const &b) {
+        position = p;
         score = s;
         board = b;
+    }
+    
+    Move(Move const &other) {
+        position = other.position;
+        score = other.score;
+        board = other.board;
     }
 };
 
@@ -122,8 +145,13 @@ public:
 
 class TeamNULLPlayer: public Player
 {
+private:
+    moveNode *root;
 public:
-        void move(Board, pair<int,int>&);
+    void move(Board, pair<int,int>&);
+    TeamNULLPlayer() {
+        root = NULL;
+    }
 };
 
 #endif
