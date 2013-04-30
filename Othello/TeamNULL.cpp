@@ -28,7 +28,7 @@ void printBoard(Board b) {
     cout << endl;
 }
 
-set<Move> findMoves(int color, vector<pair<int, int> > &pieces, vector<pair<int, int> > &opponentsPieces, Board &b) {
+set<Move> findMoves(int color, vector<pair<int, int> > const &pieces, vector<pair<int, int> > const &opponentsPieces, Board &b) {
     set<Move> moves;
     int opponent;
     if (color == WHITE) {
@@ -75,8 +75,9 @@ set<Move> findMoves(int color, vector<pair<int, int> > &pieces, vector<pair<int,
                     }
                 }
                 if (score > 0) {
-                    Move tempMove(move, score, newBoard);
-                    moves.insert(tempMove);
+                    // stored score is score of board
+                    score = score + 1 + static_cast<int>(pieces.size());
+                    moves.insert(Move(move, score, newBoard, color));
                 }
             }
         }
@@ -95,10 +96,7 @@ Move TeamNULL::move(Board b, pair<int,int> &move) {
     }
 
     if (!root) {
-        root = new moveNode;
-        root->color = opponent;
-        root->board = b;
-        root->move = make_pair(-1, -1);
+        root = new Move(make_pair(-1, -1), -1, b, opponent);
         for (int i = 0; i < b.getRow(); i++) {
             for (int j = 0; j < b.getCol(); j++) {
                 if (b[i][j] == color) {
@@ -110,31 +108,168 @@ Move TeamNULL::move(Board b, pair<int,int> &move) {
         }
     }
     
-    set<Move> moves;
+    set<Move> moves; 
     moves = findMoves(color, root->pieces, root->opponentsPieces, b);
     ////////////// remove later
     if (moves.empty()) {
-        Move noMoves(make_pair(-1, -1), 0, b);
+        Move noMoves(make_pair(-1, -1), 0, b, OPEN);
         return noMoves;
     }
     move = moves.begin()->position;
 
-    return *(moves.begin());
+    for (set<Move>::iterator itr = moves.begin(); itr != moves.end(); itr++) {
+        root->children.push_back(*itr);
+    }
+    
+    Move minMove(make_pair(-1, -1), b.getCol()*b.getRow(), b, color);
+
+    for (int i = 0; i < root->children.size(); i++) {
+        Move newRoot = root->children[i];
+        set<Move> chMoves;
+        for (int j = 0; j < newRoot.board.getRow(); j++) {
+            for (int k = 0; k < newRoot.board.getCol(); k++) {
+                if (newRoot.board[j][k] == color) {
+                    newRoot.pieces.push_back(make_pair(j, k));
+                } else if (newRoot.board[j][k] == opponent) {
+                    newRoot.opponentsPieces.push_back(make_pair(j, k));
+                }
+            }
+        }
+        chMoves = findMoves(opponent, newRoot.opponentsPieces, newRoot.pieces, newRoot.board);
+        
+        for (set<Move>::iterator itr = chMoves.begin(); itr != chMoves.end(); itr++) {
+            newRoot.children.push_back(*itr);
+        }
+
+        // make sure this works
+        if (newRoot.children.size() > 0) {
+            newRoot.score = newRoot.children[newRoot.children.size() - 1].score;
+        } else newRoot.score = 0;
+        
+        if (minMove.score > newRoot.score) minMove = newRoot;
+    }
+    move = minMove.position;
+
+    for (int i = 0; i < root->children.size(); i++) {
+        Move newRoot = root->children[i];
+        for (int j = 0; j < newRoot.children.size(); j++) {
+            set<Move> chMoves;
+            newRoot = newRoot.children[j];
+            
+            for (int a = 0; a < newRoot.board.getRow(); a++) {
+                for (int b = 0; b < newRoot.board.getCol(); b++) {
+                    if (newRoot.board[a][b] == color) {
+                        newRoot.pieces.push_back(make_pair(a, b));
+                    } else if (newRoot.board[a][b] == opponent) {
+                        newRoot.opponentsPieces.push_back(make_pair(a, b));
+                    }
+                }
+            }
+            
+            chMoves = findMoves(color, newRoot.pieces, newRoot.opponentsPieces, newRoot.board);
+
+            for (set<Move>::iterator itr = chMoves.begin(); itr != chMoves.end(); itr++) {
+                newRoot.children.push_back(*itr);
+            }
+
+            for (int k = 0; k < newRoot.children.size(); k++) {
+                set<Move> chMoves;
+                newRoot = newRoot.children[k];
+
+                for (int a = 0; a < newRoot.board.getRow(); a++) {
+                    for (int b = 0; b < newRoot.board.getCol(); b++) {
+                        if (newRoot.board[a][b] == color) {
+                            newRoot.pieces.push_back(make_pair(a, b));
+                        } else if (newRoot.board[a][b] == opponent) {
+                            newRoot.opponentsPieces.push_back(make_pair(a, b));
+                        }
+                    }
+                }
+
+                chMoves = findMoves(opponent, newRoot.opponentsPieces, newRoot.pieces, newRoot.board);
+
+                for (set<Move>::iterator itr = chMoves.begin(); itr != chMoves.end(); itr++) {
+                    newRoot.children.push_back(*itr);
+                }
+
+                // make sure this works
+                if (newRoot.children.size() > 0) {
+                    newRoot.score = newRoot.children[newRoot.children.size() - 1].score;
+                } else newRoot.score = 0;
+            }
+            // calculate minimum child
+            Move minMove(make_pair(-1, -1), b.getCol()*b.getRow(), b, color);
+            for (int c = 0; c < newRoot.children.size(); c++) {
+                if (minMove.score > newRoot.children[c].score) minMove = newRoot.children[c];
+            }
+            newRoot.score = minMove.score;
+        }
+        // calculate maximum child
+        Move maxMove(make_pair(-1, -1), 0, b, color);
+        for (int c = 0; c < newRoot.children.size(); c++) {
+            if (maxMove.score < newRoot.children[c].score) maxMove = newRoot.children[c];
+        }
+        newRoot.score = minMove.score;
+    }
+    // calculate minimum child
+    Move result(make_pair(-1, -1), b.getCol()*b.getRow(), b, color);
+    for (int c = 0; c < root->children.size(); c++) {
+        if (result.score > root->children[c].score) result = root->children[c];
+    }
+
+    return result;
 }
+
+////////////////////// change return type to void
+Move TeamNULLGen::move(Board b, pair<int,int> &move) {
+    int color = getColor();
+    int opponent;
+    if (color == WHITE) {
+        opponent = BLACK;
+    } else {
+        opponent = WHITE;
+    }
+
+    if (!root) {
+        root = new Move(make_pair(-1, -1), -1, b, opponent);
+        for (int i = 0; i < b.getRow(); i++) {
+            for (int j = 0; j < b.getCol(); j++) {
+                if (b[i][j] == color) {
+                    root->pieces.push_back(make_pair(i, j));
+                } else if (b[i][j] == opponent){
+                    root->opponentsPieces.push_back(make_pair(i, j));
+                }
+            }
+        }
+    }
+
+    set<Move> moves;
+    moves = findMoves(color, root->pieces, root->opponentsPieces, b);
+    ////////////// remove later
+    if (moves.empty()) {
+        Move noMoves(make_pair(-1, -1), 0, b, OPEN);
+        return noMoves;
+    }
+    move = moves.begin()->position;
+
+    /*set<Move>::iterator itr;
+    for(itr = moves.begin(); itr != moves.end(); itr++);
+
+    return *(--itr)*/
+    return ;
+}
+
 
 Move findMax(Board b, int level) {
 
-    level--;
-    if (level > 0) {
-        findMin();
-    }
+    
 }
 
 Move findMin(Board b, int level) {
 
     level--;
     if (level > 0) {
-        findMax();
+        //findMax();
     }
 }
 
@@ -151,7 +286,7 @@ int main(int argc, const char * argv[])
     pair<int, int> move;
 
     for (int i = 0; i < 32; i++) {
-        TeamNULL player1(BLACK);
+        TeamNULLGen player1(BLACK);
         TeamNULL player2(WHITE);
         Move moveObj = player1.move(board, move);
         board = moveObj.board;

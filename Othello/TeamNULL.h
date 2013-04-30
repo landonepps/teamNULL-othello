@@ -1,4 +1,4 @@
-//
+ //
 //  othello.h
 //  Othello
 //
@@ -99,41 +99,35 @@ public:
     }
 };
 
-struct moveNode {
-    int color;
-    // moveNode *parent;
-    vector<moveNode> children;
-    // int score;
-    Board board;
-    vector<pair<int, int> > pieces;
-    vector<pair<int, int> > opponentsPieces;
-    pair<int, int> move;
-    /*
-     moveNode(){
-     score = s;
-     }
-     */
-};
-
 class Move {
 public:
     pair<int, int> position;
     int score;
+    int color;
     Board board;
+    vector<Move> children;
+    vector<pair<int, int> > pieces;
+    vector<pair<int, int> > opponentsPieces;
     bool operator<(const Move &other) const {
-        return (this->score < other.score);
+        bool result = false;
+        if (score < other.score) result = true;
+        else if (position.first < other.position.first) result = true;
+        else if (position.second < other.position.second) result = true;
+        return result;
     }
 
-    Move(pair<int, int> p, int s, Board const &b) {
+    Move(pair<int, int> p, int s, Board const &b, int c) {
         position = p;
         score = s;
         board = b;
+        color = c;
     }
     
     Move(Move const &other) {
         position = other.position;
         score = other.score;
         board = other.board;
+        color = other.color;
     }
 };
 
@@ -154,11 +148,24 @@ public:
 class TeamNULL: public Player
 {
 private:
-    moveNode *root;
+    Move *root;
     Move findMax(Board b);
     Move findMin(Board b);
 public:
     TeamNULL(int c):Player(c) {
+        root = NULL;
+    }
+    ////////// This needs to be changed back
+    //void move(Board, pair<int,int>&);
+    Move move(Board, pair<int,int>&);
+};
+
+class TeamNULLGen: public Player
+{
+private:
+    Move *root;
+public:
+    TeamNULLGen(int c):Player(c) {
         root = NULL;
     }
     ////////// This needs to be changed back
