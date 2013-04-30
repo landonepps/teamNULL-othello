@@ -6,7 +6,7 @@
 //  Copyright (c) 2013 Landon Epps. All rights reserved.
 //
 
-#include "othello.h"
+#include "TeamNULL.h"
 
 const pair<int, int> adjacentMoves[8] = {make_pair(-1, 0), make_pair(-1, 1),
 make_pair(0 , 1), make_pair(1 , 1), make_pair(1 , 0), make_pair(1 , -1),
@@ -20,24 +20,13 @@ void printBoard(Board b) {
             } else if (b[i][j] == BLACK) {
                 cout << "☻ ";
             } else {
-                cout << "_ ";
+                cout << "- ";
             }
         }
         cout << endl;
     }
     cout << endl;
 }
-
-/*
-struct moveInfo {
-    int score;
-    pair<int, int> move;
-    moveInfo (int s, pair<int, int> m) {
-        score = s;
-        move = m;
-    }
-};
-*/
 
 set<Move> findMoves(int color, vector<pair<int, int> > &pieces, vector<pair<int, int> > &opponentsPieces, Board &b) {
     set<Move> moves;
@@ -95,7 +84,8 @@ set<Move> findMoves(int color, vector<pair<int, int> > &pieces, vector<pair<int,
     return moves;
 }
 
-void TeamNULLPlayer::move(Board b, pair<int,int> &move) {
+////////////////////// change return type to void
+Move TeamNULL::move(Board b, pair<int,int> &move) {
     int color = getColor();
     int opponent;
     if (color == WHITE) {
@@ -120,47 +110,56 @@ void TeamNULLPlayer::move(Board b, pair<int,int> &move) {
         }
     }
     
-    // set<Move> moves;
-    // moves = findMoves(color, root->pieces, root->opponentsPieces, b);
-    
+    set<Move> moves;
+    moves = findMoves(color, root->pieces, root->opponentsPieces, b);
+    ////////////// remove later
+    if (moves.empty()) {
+        Move noMoves(make_pair(-1, -1), 0, b);
+        return noMoves;
+    }
+    move = moves.begin()->position;
+
+    return *(moves.begin());
 }
 
+Move findMax(Board b, int level) {
+
+    level--;
+    if (level > 0) {
+        findMin();
+    }
+}
+
+Move findMin(Board b, int level) {
+
+    level--;
+    if (level > 0) {
+        findMax();
+    }
+}
 
 int main(int argc, const char * argv[])
 {
     Board board;
-    Move move(make_pair(1, 1), 2, board);
-    vector<pair<int, int> > blackPieces;
-    vector<pair<int, int> > whitePieces;
-    blackPieces.push_back(make_pair(1, 0));
-    blackPieces.push_back(make_pair(1, 2));
-    blackPieces.push_back(make_pair(2, 3));
-    blackPieces.push_back(make_pair(3, 2));
-    whitePieces.push_back(make_pair(0, 0));
-    whitePieces.push_back(make_pair(1, 1));
-    whitePieces.push_back(make_pair(2, 2));
-    whitePieces.push_back(make_pair(3, 3));
-
-    board[0][0] = WHITE;
-    board[1][1] = WHITE;
-    board[2][2] = WHITE;
+    
     board[3][3] = WHITE;
-    board[1][0] = BLACK;
-    board[1][2] = BLACK;
-    board[2][3] = BLACK;
-    board[3][2] = BLACK;
+    board[3][4] = BLACK;
+    board[4][3] = BLACK;
+    board[4][4] = WHITE;
 
     printBoard(board);
+    pair<int, int> move;
 
-    set<Move> theMoves;
-    theMoves = findMoves(1, blackPieces, whitePieces, board);
-    
-    for (set<Move>::iterator itr = theMoves.begin(); itr != theMoves.end(); itr++) {
-        cout << "Move: (" << itr->position.first << ", " << itr->position.second << ")" << endl;
-        cout << "Score: " << itr->score << endl;
-        cout << "Board: " << endl;
-        printBoard(itr->board);
+    for (int i = 0; i < 32; i++) {
+        TeamNULL player1(BLACK);
+        TeamNULL player2(WHITE);
+        Move moveObj = player1.move(board, move);
+        board = moveObj.board;
+        printBoard(board);
+        moveObj = player2.move(board, move);
+        board = moveObj.board;
+        printBoard(board);
     }
-
+    
     return 0;
 }

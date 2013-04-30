@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		446B0015171E0ECB00716BA6 /* othello.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 446B0014171E0ECB00716BA6 /* othello.cpp */; };
+		446B0015171E0ECB00716BA6 /* TeamNULL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 446B0014171E0ECB00716BA6 /* TeamNULL.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,8 +24,8 @@
 
 /* Begin PBXFileReference section */
 		446B0011171E0ECB00716BA6 /* Othello */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Othello; sourceTree = BUILT_PRODUCTS_DIR; };
-		446B0014171E0ECB00716BA6 /* othello.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = othello.cpp; sourceTree = "<group>"; };
-		446B001D171E0F6D00716BA6 /* othello.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = othello.h; sourceTree = "<group>"; };
+		446B0014171E0ECB00716BA6 /* TeamNULL.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TeamNULL.cpp; sourceTree = "<group>"; };
+		446B001D171E0F6D00716BA6 /* TeamNULL.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TeamNULL.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -58,8 +58,8 @@
 		446B0013171E0ECB00716BA6 /* Othello */ = {
 			isa = PBXGroup;
 			children = (
-				446B0014171E0ECB00716BA6 /* othello.cpp */,
-				446B001D171E0F6D00716BA6 /* othello.h */,
+				446B0014171E0ECB00716BA6 /* TeamNULL.cpp */,
+				446B001D171E0F6D00716BA6 /* TeamNULL.h */,
 			);
 			path = Othello;
 			sourceTree = "<group>";
@@ -115,7 +115,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				446B0015171E0ECB00716BA6 /* othello.cpp in Sources */,
+				446B0015171E0ECB00716BA6 /* TeamNULL.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -144,7 +144,7 @@
 					"$(inherited)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_VERSION = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
@@ -171,7 +171,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = c99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
-				GCC_VERSION = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
@@ -185,6 +185,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_VERSION = "";
+				GCC_WARN_PEDANTIC = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -193,6 +194,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_VERSION = "";
+				GCC_WARN_PEDANTIC = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

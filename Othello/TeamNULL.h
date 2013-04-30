@@ -20,16 +20,14 @@ const int OPEN  = 0;
 const int BLACK = 1;
 const int WHITE = 2;
 
-/*
-class Board{
-private:
-    int row, col;
-    int **grid;
-public:
-    int getRow();
-    int getCol();
-    int* operator[](int n);
-};*/
+struct moveInfo {
+    int score;
+    pair<int, int> move;
+    moveInfo (int s, pair<int, int> m) {
+        score = s;
+        move = m;
+    }
+};
 
 class Board {
 private:
@@ -64,13 +62,21 @@ public:
     }
 
     Board operator=(Board const &other) {
-        row = other.row;
-        col = other.col;
-        grid = new int*[row];
-        for (int i = 0; i < row; i++) {
-            grid[i] = new int[col];
-            for (int j = 0; j < col; j++) {
-                grid[i][j] = other.grid[i][j];
+        if (this != &other) {
+            if (grid) {
+                for (int i = 0; i < row; i++) {
+                    delete [] grid[i];
+                }
+                delete [] grid;
+            }
+            row = other.row;
+            col = other.col;
+            grid = new int*[row];
+            for (int i = 0; i < row; i++) {
+                grid[i] = new int[col];
+                for (int j = 0; j < col; j++) {
+                    grid[i][j] = other.grid[i][j];
+                }
             }
         }
         return *this;
@@ -115,7 +121,7 @@ public:
     int score;
     Board board;
     bool operator<(const Move &other) const {
-        return (this->position.first < other.position.first);
+        return (this->score < other.score);
     }
 
     Move(pair<int, int> p, int s, Board const &b) {
@@ -137,21 +143,27 @@ private:
     
 public:
     Player(int c = BLACK) { color = c; }
-    virtual ~Player();
+    virtual ~Player() { };
     int getColor() { return color; }
     void setColor(int c) { color = c; }
-    virtual void move(Board, pair<int,int>&);
+    ///////// This needs to be changed back
+    //virtual void move(Board, pair<int,int>&) = 0;
 };
 
-class TeamNULLPlayer: public Player
+
+class TeamNULL: public Player
 {
 private:
     moveNode *root;
+    Move findMax(Board b);
+    Move findMin(Board b);
 public:
-    void move(Board, pair<int,int>&);
-    TeamNULLPlayer() {
+    TeamNULL(int c):Player(c) {
         root = NULL;
     }
+    ////////// This needs to be changed back
+    //void move(Board, pair<int,int>&);
+    Move move(Board, pair<int,int>&);
 };
 
 #endif
