@@ -256,21 +256,7 @@ Move TeamNULLGen::move(Board b, pair<int,int> &move) {
     for(itr = moves.begin(); itr != moves.end(); itr++);
 
     return *(--itr)*/
-    return ;
-}
-
-
-Move findMax(Board b, int level) {
-
-    
-}
-
-Move findMin(Board b, int level) {
-
-    level--;
-    if (level > 0) {
-        //findMax();
-    }
+    return *(moves.begin());
 }
 
 int main(int argc, const char * argv[])
@@ -286,8 +272,8 @@ int main(int argc, const char * argv[])
     pair<int, int> move;
 
     for (int i = 0; i < 32; i++) {
-        TeamNULLGen player1(BLACK);
-        TeamNULL player2(WHITE);
+        TeamNULLGre player1(BLACK);
+        TeamNULLGre player2(WHITE);
         Move moveObj = player1.move(board, move);
         board = moveObj.board;
         printBoard(board);

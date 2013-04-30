@@ -173,4 +173,18 @@ public:
     Move move(Board, pair<int,int>&);
 };
 
+class TeamNULLGre: public Player
+{
+private:
+    Move *root;
+public:
+    TeamNULLGre(int c):Player(c) {
+        root = NULL;
+    }
+    ////////// This needs to be changed back
+    //void move(Board, pair<int,int>&);
+    Move move(Board, pair<int,int>&);
+};
+
+
 #endif
