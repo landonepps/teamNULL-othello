@@ -1,16 +1,20 @@
-//
-//  main.cpp
-//  Othello
-//
-//  Created by Landon Epps on 4/16/13.
-//  Copyright (c) 2013 Landon Epps. All rights reserved.
-//
+/******************************************************************************
+ Author: Team NULL
+ Title : Othello AI
+ Description: This algorithm determines the optimal moves for a game of
+ Othello. While this algorithm doesn't solve the game of Othello (since
+ right now, Othello is considered an unsolved game), it implements a
+ strategy which will calculate winning moves for the game.
+ Created: 4/16/2013
+ Modified: 4/29/2013
+ Due: 4/29/2013
+ ******************************************************************************/
 
 #include "TeamNULL.h"
 
-const pair<int, int> adjacentMoves[8] = {make_pair(-1, 0), make_pair(-1, 1),
-make_pair(0 , 1), make_pair(1 , 1), make_pair(1 , 0), make_pair(1 , -1),
-make_pair(0, -1), make_pair(-1, -1)};
+const pair<int, int> adjMovs[8] = {make_pair(-1, 0), make_pair(-1, 1),
+    make_pair(0 , 1), make_pair(1 , 1), make_pair(1 , 0), make_pair(1 , -1),
+    make_pair(0, -1), make_pair(-1, -1)};
 
 void printBoard(Board b) {
     for (int i = 0; i < b.getRow(); i++) {
@@ -28,7 +32,18 @@ void printBoard(Board b) {
     cout << endl;
 }
 
-set<Move> findMoves(int color, vector<pair<int, int> > const &pieces, vector<pair<int, int> > const &opponentsPieces, Board &b) {
+//*****************************************************************************
+// name: findMoves                                                            *
+// description: finds all on the moves for a particular color and returns it  *
+//     as a set                                                               *
+// return type: set<Move>                                                     *
+// pre: the color integer is a valid value, the board is valid, and the       *
+//     pieces/oppPiece vectors contain valid places on the board of           *
+//     the proper color for each player.                                      *
+// post: the pieces/oppPiece vectors and board is unchanged                   *
+// returns: a set containing the possible moves for a player                  *
+//*****************************************************************************
+set<Move> findMoves(int color, vector<pair<int, int> > &oppPiece, Board &b) {
     set<Move> moves;
     int opponent;
     if (color == WHITE) {
@@ -37,12 +52,14 @@ set<Move> findMoves(int color, vector<pair<int, int> > const &pieces, vector<pai
         opponent = WHITE;
     }
     // for all opponents pieces
-    for (int i = 0; i < opponentsPieces.size(); i++) {
+    for (int i = 0; i < oppPiece.size(); i++) {
         // for all directions
         for(int j = 0; j < 8; j++) {
-            // make a move for each direction in adjacentMoves
-            pair<int,int> move = make_pair(opponentsPieces[i].first + adjacentMoves[j].first,
-                                           opponentsPieces[i].second + adjacentMoves[j].second);
+            // make a move for each direction in adjMovs
+            pair<int,int> move = make_pair(oppPiece[i].first +
+                                           adjMovs[j].first,
+                                           oppPiece[i].second +
+                                           adjMovs[j].second);
             // if that move is on the board and is open
             if (move.first >= 0 && move.first < b.getRow() &&
                 move.second >= 0 && move.second < b.getCol() &&
@@ -56,28 +73,31 @@ set<Move> findMoves(int color, vector<pair<int, int> > const &pieces, vector<pai
                     // keep track of score for each direction
                     int tempScore = 0;
                     Board tempBoard = newBoard;
-                    pair<int, int> nextDirection = make_pair(move.first + adjacentMoves[k].first,
-                                                             move.second + adjacentMoves[k].second);
-                    
-                    while (nextDirection.first >= 0 && nextDirection.first < b.getRow() &&
-                           nextDirection.second >= 0 && nextDirection.second < b.getCol() &&
-                           b[nextDirection.first][nextDirection.second] == opponent) {
+                    pair<int, int> nextDir;
+                    nextDir.first = move.first + adjMovs[k].first;
+                    nextDir.second = move.second
+                    + adjMovs[k].second;
+
+                    while (nextDir.first >= 0 && nextDir.first < b.getRow() &&
+                           nextDir.second >= 0 && nextDir.second < b.getCol() &&
+                           b[nextDir.first][nextDir.second] == opponent) {
                         tempScore++;
-                        tempBoard[nextDirection.first][nextDirection.second] = color;
-                        nextDirection = make_pair(nextDirection.first + adjacentMoves[k].first,
-                                                  nextDirection.second + adjacentMoves[k].second);
+                        tempBoard[nextDir.first][nextDir.second] = color;
+                        nextDir = make_pair(nextDir.first + adjMovs[k].first,
+                                            nextDir.second + adjMovs[k].second);
                     }
-                    if (nextDirection.first >= 0 && nextDirection.first < b.getRow() &&
-                        nextDirection.second >= 0 && nextDirection.second < b.getCol() &&
-                        b[nextDirection.first][nextDirection.second] == color) {
+                    if (nextDir.first >= 0 &&
+                        nextDir.first < b.getRow() &&
+                        nextDir.second >= 0 &&
+                        nextDir.second < b.getCol() &&
+                        b[nextDir.first][nextDir.second] == color) {
                         score += tempScore;
                         newBoard = tempBoard;
                     }
                 }
                 if (score > 0) {
-                    // stored score is score of board
-                    score = score + 1 + static_cast<int>(pieces.size());
-                    moves.insert(Move(move, score, newBoard, color));
+                    Move tempMove(move, score, newBoard);
+                    moves.insert(tempMove);
                 }
             }
         }
@@ -85,7 +105,16 @@ set<Move> findMoves(int color, vector<pair<int, int> > const &pieces, vector<pai
     return moves;
 }
 
-////////////////////// change return type to void
+//*****************************************************************************
+// name: move                                                                 *
+// description: finds a location to place a piece for the current move of     *
+//     Othello given the board.                                               *
+// return type: void                                                          *
+// pre: the board information is valid and reflects the current state of the  *
+//     game.                                                                  *
+// post: the move reference passed is changed to the decided piece placement  *
+// returns: nothing                                                           *
+//*****************************************************************************
 Move TeamNULL::move(Board b, pair<int,int> &move) {
     int color = getColor();
     int opponent;
@@ -95,174 +124,37 @@ Move TeamNULL::move(Board b, pair<int,int> &move) {
         opponent = WHITE;
     }
 
-    if (!root) {
-        root = new Move(make_pair(-1, -1), -1, b, opponent);
-        for (int i = 0; i < b.getRow(); i++) {
-            for (int j = 0; j < b.getCol(); j++) {
-                if (b[i][j] == color) {
-                    root->pieces.push_back(make_pair(i, j));
-                } else if (b[i][j] == opponent){
-                    root->opponentsPieces.push_back(make_pair(i, j));
-                }
-            }
-        }
-    }
-    
-    set<Move> moves; 
-    moves = findMoves(color, root->pieces, root->opponentsPieces, b);
-    ////////////// remove later
-    if (moves.empty()) {
-        Move noMoves(make_pair(-1, -1), 0, b, OPEN);
-        return noMoves;
-    }
-    move = moves.begin()->position;
-
-    for (set<Move>::iterator itr = moves.begin(); itr != moves.end(); itr++) {
-        root->children.push_back(*itr);
-    }
-    
-    Move minMove(make_pair(-1, -1), b.getCol()*b.getRow(), b, color);
-
-    for (int i = 0; i < root->children.size(); i++) {
-        Move newRoot = root->children[i];
-        set<Move> chMoves;
-        for (int j = 0; j < newRoot.board.getRow(); j++) {
-            for (int k = 0; k < newRoot.board.getCol(); k++) {
-                if (newRoot.board[j][k] == color) {
-                    newRoot.pieces.push_back(make_pair(j, k));
-                } else if (newRoot.board[j][k] == opponent) {
-                    newRoot.opponentsPieces.push_back(make_pair(j, k));
-                }
-            }
-        }
-        chMoves = findMoves(opponent, newRoot.opponentsPieces, newRoot.pieces, newRoot.board);
-        
-        for (set<Move>::iterator itr = chMoves.begin(); itr != chMoves.end(); itr++) {
-            newRoot.children.push_back(*itr);
-        }
-
-        // make sure this works
-        if (newRoot.children.size() > 0) {
-            newRoot.score = newRoot.children[newRoot.children.size() - 1].score;
-        } else newRoot.score = 0;
-        
-        if (minMove.score > newRoot.score) minMove = newRoot;
-    }
-    move = minMove.position;
-
-    for (int i = 0; i < root->children.size(); i++) {
-        Move newRoot = root->children[i];
-        for (int j = 0; j < newRoot.children.size(); j++) {
-            set<Move> chMoves;
-            newRoot = newRoot.children[j];
-            
-            for (int a = 0; a < newRoot.board.getRow(); a++) {
-                for (int b = 0; b < newRoot.board.getCol(); b++) {
-                    if (newRoot.board[a][b] == color) {
-                        newRoot.pieces.push_back(make_pair(a, b));
-                    } else if (newRoot.board[a][b] == opponent) {
-                        newRoot.opponentsPieces.push_back(make_pair(a, b));
-                    }
-                }
-            }
-            
-            chMoves = findMoves(color, newRoot.pieces, newRoot.opponentsPieces, newRoot.board);
-
-            for (set<Move>::iterator itr = chMoves.begin(); itr != chMoves.end(); itr++) {
-                newRoot.children.push_back(*itr);
-            }
-
-            for (int k = 0; k < newRoot.children.size(); k++) {
-                set<Move> chMoves;
-                newRoot = newRoot.children[k];
-
-                for (int a = 0; a < newRoot.board.getRow(); a++) {
-                    for (int b = 0; b < newRoot.board.getCol(); b++) {
-                        if (newRoot.board[a][b] == color) {
-                            newRoot.pieces.push_back(make_pair(a, b));
-                        } else if (newRoot.board[a][b] == opponent) {
-                            newRoot.opponentsPieces.push_back(make_pair(a, b));
-                        }
-                    }
-                }
-
-                chMoves = findMoves(opponent, newRoot.opponentsPieces, newRoot.pieces, newRoot.board);
-
-                for (set<Move>::iterator itr = chMoves.begin(); itr != chMoves.end(); itr++) {
-                    newRoot.children.push_back(*itr);
-                }
-
-                // make sure this works
-                if (newRoot.children.size() > 0) {
-                    newRoot.score = newRoot.children[newRoot.children.size() - 1].score;
-                } else newRoot.score = 0;
-            }
-            // calculate minimum child
-            Move minMove(make_pair(-1, -1), b.getCol()*b.getRow(), b, color);
-            for (int c = 0; c < newRoot.children.size(); c++) {
-                if (minMove.score > newRoot.children[c].score) minMove = newRoot.children[c];
-            }
-            newRoot.score = minMove.score;
-        }
-        // calculate maximum child
-        Move maxMove(make_pair(-1, -1), 0, b, color);
-        for (int c = 0; c < newRoot.children.size(); c++) {
-            if (maxMove.score < newRoot.children[c].score) maxMove = newRoot.children[c];
-        }
-        newRoot.score = minMove.score;
-    }
-    // calculate minimum child
-    Move result(make_pair(-1, -1), b.getCol()*b.getRow(), b, color);
-    for (int c = 0; c < root->children.size(); c++) {
-        if (result.score > root->children[c].score) result = root->children[c];
-    }
-
-    return result;
-}
-
-////////////////////// change return type to void
-Move TeamNULLGen::move(Board b, pair<int,int> &move) {
-    int color = getColor();
-    int opponent;
-    if (color == WHITE) {
-        opponent = BLACK;
-    } else {
-        opponent = WHITE;
-    }
-
-    if (!root) {
-        root = new Move(make_pair(-1, -1), -1, b, opponent);
-        for (int i = 0; i < b.getRow(); i++) {
-            for (int j = 0; j < b.getCol(); j++) {
-                if (b[i][j] == color) {
-                    root->pieces.push_back(make_pair(i, j));
-                } else if (b[i][j] == opponent){
-                    root->opponentsPieces.push_back(make_pair(i, j));
-                }
+    root = new moveNode;
+    root->color = opponent;
+    root->board = b;
+    root->move = make_pair(-1, -1);
+    for (int i = 0; i < b.getRow(); i++) {
+        for (int j = 0; j < b.getCol(); j++) {
+            if (b[i][j] == color) {
+                root->pieces.push_back(make_pair(i, j));
+            } else if (b[i][j] == opponent){
+                root->oppPiece.push_back(make_pair(i, j));
             }
         }
     }
 
     set<Move> moves;
-    moves = findMoves(color, root->pieces, root->opponentsPieces, b);
-    ////////////// remove later
-    if (moves.empty()) {
-        Move noMoves(make_pair(-1, -1), 0, b, OPEN);
+    moves = findMoves(color, root->oppPiece, b);
+
+    if (!moves.empty()) {
+        move = moves.begin()->position;
+    } else {
+        Move noMoves(make_pair(-1, -1), 0, b);
         return noMoves;
     }
-    move = moves.begin()->position;
 
-    /*set<Move>::iterator itr;
-    for(itr = moves.begin(); itr != moves.end(); itr++);
-
-    return *(--itr)*/
     return *(moves.begin());
 }
 
 int main(int argc, const char * argv[])
 {
     Board board;
-    
+
     board[3][3] = WHITE;
     board[3][4] = BLACK;
     board[4][3] = BLACK;
@@ -272,8 +164,8 @@ int main(int argc, const char * argv[])
     pair<int, int> move;
 
     for (int i = 0; i < 32; i++) {
-        TeamNULLGre player1(BLACK);
-        TeamNULLGre player2(WHITE);
+        TeamNULL player1(BLACK);
+        TeamNULL player2(WHITE);
         Move moveObj = player1.move(board, move);
         board = moveObj.board;
         printBoard(board);
@@ -281,6 +173,7 @@ int main(int argc, const char * argv[])
         board = moveObj.board;
         printBoard(board);
     }
-    
+
     return 0;
 }
+

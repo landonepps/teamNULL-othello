@@ -1,11 +1,14 @@
- //
-//  othello.h
-//  Othello
-//
-//  Created by Landon Epps on 4/16/13.
-//  Copyright (c) 2013 Landon Epps. All rights reserved.
-//
-
+/******************************************************************************
+ Author: Team NULL
+ Title : Othello AI
+ Description: This algorithm determines the optimal moves for a game of
+ Othello. While this algorithm doesn't solve the game of Othello (since
+ right now, Othello is considered an unsolved game), it implements a
+ strategy which will calculate winning moves for the game.
+ Created: 4/16/2013
+ Modified: 4/29/2013
+ Due: 4/29/2013
+ ******************************************************************************/
 #ifndef Othello_othello_h
 #define Othello_othello_h
 
@@ -19,15 +22,6 @@ using namespace std;
 const int OPEN  = 0;
 const int BLACK = 1;
 const int WHITE = 2;
-
-struct moveInfo {
-    int score;
-    pair<int, int> move;
-    moveInfo (int s, pair<int, int> m) {
-        score = s;
-        move = m;
-    }
-};
 
 class Board {
 private:
@@ -81,7 +75,7 @@ public:
         }
         return *this;
     }
-
+    
     Board(Board const &b) {
         row = b.row;
         col = b.col;
@@ -99,42 +93,10 @@ public:
     }
 };
 
-class Move {
-public:
-    pair<int, int> position;
-    int score;
-    int color;
-    Board board;
-    vector<Move> children;
-    vector<pair<int, int> > pieces;
-    vector<pair<int, int> > opponentsPieces;
-    bool operator<(const Move &other) const {
-        bool result = false;
-        if (score < other.score) result = true;
-        else if (position.first < other.position.first) result = true;
-        else if (position.second < other.position.second) result = true;
-        return result;
-    }
-
-    Move(pair<int, int> p, int s, Board const &b, int c) {
-        position = p;
-        score = s;
-        board = b;
-        color = c;
-    }
-    
-    Move(Move const &other) {
-        position = other.position;
-        score = other.score;
-        board = other.board;
-        color = other.color;
-    }
-};
-
 class Player{
 private:
     int color;
-    
+
 public:
     Player(int c = BLACK) { color = c; }
     virtual ~Player() { };
@@ -144,47 +106,60 @@ public:
     //virtual void move(Board, pair<int,int>&) = 0;
 };
 
+class Move {
+public:
+    pair<int, int> position;
+    int score;
+    Board board;
+    bool operator<(const Move &other) const {
+        return (this->score < other.score);
+    }
+
+    Move(pair<int, int> p, int s, Board const &b) {
+        position = p;
+        score = s;
+        board = b;
+    }
+
+    Move(Move const &other) {
+        position = other.position;
+        score = other.score;
+        board = other.board;
+    }
+};
+
+struct moveNode {
+    int color;
+    vector<moveNode> children;
+    Board board;
+    vector<pair<int, int> > pieces;
+    vector<pair<int, int> > oppPiece;
+    pair<int, int> move;
+};
 
 class TeamNULL: public Player
 {
 private:
-    Move *root;
+    moveNode *root;
     Move findMax(Board b);
     Move findMin(Board b);
 public:
     TeamNULL(int c):Player(c) {
         root = NULL;
     }
-    ////////// This needs to be changed back
+    //**************************************************************************
+    // name: move                                                              *
+    // description: finds a location to place a piece for the current move of  *
+    //     Othello given the board.                                            *
+    // return type: void                                                       *
+    // pre: the board information is valid and reflects the current state of   *
+    //      the game.                                                          *
+    // post: the move reference passed is changed to the decided piece         *
+    //       placement                                                         *
+    // returns: nothing                                                        *
+    //**************************************************************************
     //void move(Board, pair<int,int>&);
     Move move(Board, pair<int,int>&);
 };
-
-class TeamNULLGen: public Player
-{
-private:
-    Move *root;
-public:
-    TeamNULLGen(int c):Player(c) {
-        root = NULL;
-    }
-    ////////// This needs to be changed back
-    //void move(Board, pair<int,int>&);
-    Move move(Board, pair<int,int>&);
-};
-
-class TeamNULLGre: public Player
-{
-private:
-    Move *root;
-public:
-    TeamNULLGre(int c):Player(c) {
-        root = NULL;
-    }
-    ////////// This needs to be changed back
-    //void move(Board, pair<int,int>&);
-    Move move(Board, pair<int,int>&);
-};
-
 
 #endif
